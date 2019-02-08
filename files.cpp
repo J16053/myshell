@@ -11,7 +11,7 @@ using namespace std;
 void displayHistory(char * path) {
 	ifstream history;
 	string filename(path);
-	filename +=  "/history.txt";
+	filename +=  "/.history.txt";
 	history.open(filename.c_str());
 	if (history.is_open()) {
 		int lineno = 1;
@@ -70,7 +70,7 @@ void exportVariable(char * path, char * input) {
 bool updateHistory(char command[], char * path) {
 	ofstream history;
 	string filename(path);
-	filename += "/history.txt";
+	filename += "/.history.txt";
 	history.open(filename.c_str(), ios::app);
 	if (history.is_open()) {
 		history << command << endl;
@@ -95,7 +95,7 @@ void historyLookup(char * input, char * path) {
 	if (valid) {
 		ifstream history;
 		string filename(path);
-		filename += "/history.txt";
+		filename += "/.history.txt";
 		history.open(filename.c_str());
 		int lineno = atoi(&input[1]);
 		if (history.is_open()) {
@@ -111,7 +111,6 @@ void historyLookup(char * input, char * path) {
 					i++;
 				}
 				input[i] = '\0';
-				printf("%s\n", input);
 			} else {
 				cout << "No such line in history" << endl;
 			}
