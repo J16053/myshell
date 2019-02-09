@@ -16,8 +16,8 @@ int main() {
 	char * startDir = NULL;
 	string path = "";
 	startDir = getcwd(startDir, MAXINPUT); 
-	// exportVariable(startDir, "PATH=");
-	setPath(startDir, NULL);
+	// char nullpath[] = "PATH=";
+	// exportVariable(startDir, nullpath);
 	if (startDir == NULL) {
 		cout << "something's wrong startDir is NULL" << endl;
 		exit(0);
@@ -53,11 +53,6 @@ int main() {
 		} else if (strcmp(argv[0], "export") == 0) {
 			if (argc == 1) {
 				displayVariables(startDir);
-			} else if (strncmp(argv[1], "PATH=", 5) == 0) {
-				path = argv[1];
-				path = path.substr(5);
-				cout << path << endl;
-				setPath(startDir, &argv[1][5]);
 			} else {
 				exportVariable(startDir, argv[1]);
 			} 

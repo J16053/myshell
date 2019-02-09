@@ -3,11 +3,9 @@
 
 void displayHistory(char *);
 
-bool updateHistory(char[], char *);
+void updateHistory(char *, char *);
 
 void historyLookup(char *, char *);
-
-void setPath(char *, char *);
 
 void displayVariables(char *);
 
