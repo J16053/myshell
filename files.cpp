@@ -52,6 +52,23 @@ void displayVariables(char * path) {
 	}
 }
 
+char * getPath(char * path) {
+	ifstream file;
+	string filename(path);
+	filename += "/.export.txt";
+	file.open(filename.c_str());
+	string PATH;
+	if (file.is_open()) {
+		string line;
+		getline(file, line);
+		PATH = line.substr(5, string::npos);
+		file.close();
+	} else {
+		cerr << "Error opening the file" << endl;
+	}
+	return &PATH[0];
+}
+
 /**
  * Exports a variable to /.export.txt
  * char * path is the path to the directory in which /.export.txt is stored

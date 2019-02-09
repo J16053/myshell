@@ -1,5 +1,4 @@
-#include <iostream> // may be redundant - consider changing couts to printfs
-#include <cstdio>
+#include <iostream>
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
@@ -14,7 +13,6 @@ int main() {
 	char input[MAXINPUT];
 	char * argv[MAXARGS];
 	char * startDir = NULL;
-	string path = "";
 	startDir = getcwd(startDir, MAXINPUT); 
 	// char nullpath[] = "PATH=";
 	// exportVariable(startDir, nullpath);
@@ -25,30 +23,29 @@ int main() {
 	while (true) {
 		cout << ">> ";
 		int argc = 0; // number of arguments
-		cin.getline(input, MAXINPUT); // '\0' at end of input
+		cin.getline(input, MAXINPUT); // reads user input into input, '\0' terminated
 		if (input[0] == '!') {
 			historyLookup(input, startDir);
 		}
 		updateHistory(input, startDir);
-		char * arg; // temporary variable
+		char * arg; // temporary variable to store individual arguments
 		arg = strtok(input, " ");
 		while (arg != NULL) {
-			argv[argc] = arg; // argv will just contain pointers
+			argv[argc] = arg; // argv is an array of pointers to arguments
 			argc++;
 			arg = strtok(NULL, " ");
 		}	
 		if (strcmp(argv[0], "pwd") == 0) {
 			char * name = NULL;
-			name = getcwd(name, MAXINPUT); // copies current startDir to *name
+			name = getcwd(name, MAXINPUT); // copies current directory path to *name
 			if (name != NULL) {
-				printf("%s\n", name);
+				cout << name << endl;
 			} else {
-				printf("Error:  %s", name);
+				cout << "Error: " << name << endl;
 			}
-			delete name;
 		} else if (strcmp(argv[0], "cd") == 0) {
-			if (chdir(argv[1]) == -1) {	// chdir returns -1 when unsuccessful
-				printf("%s\n", strerror(errno)); // print error
+			if (chdir(argv[1]) == -1) {	// chdir returns -1 when unsuccessful and stores error in errno
+				cout << strerror(errno) << endl;
 			}
 		} else if (strcmp(argv[0], "export") == 0) {
 			if (argc == 1) {
@@ -61,12 +58,28 @@ int main() {
 		} else if (strcmp(argv[0], "exit") == 0) {
 			exit(0);
 		} else {
-			// see if command exists, if yes display full startDir
-			cout << "command not found" << endl;
+			// see if command exists in PATH-specified directories, if yes display full path and args
+			bool found = false;
+			char * PATH = getPath(startDir); // contains value of exported path variable
+			char slash[] = "/";
+			char * path; // will hold individual path to search
+			path = strtok(PATH, ":");
+			while (path != NULL && !found) {
+				string searchpath = path;
+				searchpath += "/";
+				searchpath += argv[0];
+				if (access(searchpath.c_str(), X_OK) == 0) {
+					cout << argv[0] << " is an external command (" << searchpath << ")" << endl;
+					cout << "command arguments:" << endl;
+					for (int i = 1; i < argc; i++) {
+						cout << argv[i] << endl;
+					}
+					found = true;
+				}
+				path = strtok(NULL, ":");
+			}
+			if (!found) cout << "command not found" << endl;
 		}
 	}
-	// no need for deletes - tell me, was any memory dynamically allocated?
-	// however, I could consider dynamically allocating input, that would potentially be smart
 	return 0;
-}
-
+} 

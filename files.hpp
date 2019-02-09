@@ -10,4 +10,6 @@ void historyLookup(char *, char *);
 void displayVariables(char *);
 
 void exportVariable(char *, char *);
+
+char * getPath(char *);
 #endif
