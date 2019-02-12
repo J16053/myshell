@@ -37,6 +37,7 @@ int main() {
 			arg = strtok(NULL, " ");
 		}
 		if (strcmp(argv[0], "pwd") == 0) {
+			// print working directory
 			char * name = NULL;
 			name = getcwd(name, MAXINPUT); // copies current directory path to *name
 			if (name != NULL) {
@@ -45,26 +46,31 @@ int main() {
 				cout << strerror(errno) << endl;
 			}
 		} else if (strcmp(argv[0], "cd") == 0) {
+			// change directories
 			if (chdir(argv[1]) == -1) {	// chdir returns -1 when unsuccessful and stores error in errno
 				cout << strerror(errno) << endl;
 			}
 		} else if (strcmp(argv[0], "export") == 0) {
+			// export
 			if (argc == 1) {
 				displayVariables(startDir);
 			} else {
 				exportVariable(startDir, argv[1]);
 			} 
 		} else if (strcmp(argv[0], "history") == 0) {
+			// history
 			displayHistory(startDir);
 		} else if (strcmp(argv[0], "exit") == 0) {
-			string exportFilename(startDir);
-			exportFilename += "/.export.txt";
-			remove(exportFilename.c_str());
+			// exit
+			// delete file with exported variables
+			string exportfile(startDir);
+			exportfile += "/.export.txt";
+			remove(exportfile.c_str());
 			exit(0);
 		} else {
 			// see if command exists in PATH-specified directories, if yes display full path and args
 			bool found = false;
-			char * PATH = getPath(startDir); // contains value of exported path variable
+			char * PATH = getPath(startDir); // contains value of exported PATH variable
 			char slash[] = "/";
 			char * path; // will hold individual path to search
 			path = strtok(PATH, ":");
