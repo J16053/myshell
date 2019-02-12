@@ -10,25 +10,39 @@
 using namespace std;
 
 /**
+ * Prints the contents of file specified by filename, with or without line numbers
+ * string filename contains the path to the file to be printed
+ * bool linenumbers is true if line numbers are to be printed, false otherwise
+ */
+
+void print(string filename, bool linenumbers) {
+	ifstream file;
+	file.open(filename.c_str());
+	if (file.is_open()) {
+		int lineno = 1;
+		string line;
+		while (getline(file, line)) {
+			if (linenumbers) {
+				cout << setw(5) << right << lineno++ << "  " << line << endl;
+			} else {
+				cout << line << endl;
+			}
+		}
+		file.close();
+	} else {
+		cerr << "Error opening " << filename << endl;
+	}
+}
+
+/**
  * Prints the contents of /.history.txt to the console with line numbers
  * char * path contains the path to the directory containing /.history.txt
  */
 
 void displayHistory(char * path) {
-	ifstream history;
 	string filename(path);
 	filename +=  "/.history.txt";
-	history.open(filename.c_str());
-	if (history.is_open()) {
-		int lineno = 1;
-		string line;
-		while (getline(history, line)) {
-			cout << setw(5) << right << lineno++ << "  " << line << endl;
-		}
-		history.close();
-	} else {
-		cerr << "Error opening the file" << endl;
-	}
+	print(filename, true);
 }
 
 /**
@@ -37,19 +51,9 @@ void displayHistory(char * path) {
  */
 
 void displayVariables(char * path) {
-	ifstream variables;
 	string filename(path);
 	filename += "/.export.txt";
-	variables.open(filename.c_str());
-	if (variables.is_open()) {
-		string line;
-		while (getline(variables, line)) {
-			cout << line << endl;
-		}
-		variables.close();
-	} else {
-		cerr << "Error opening the file" << endl;
-	}
+	print(filename, false);
 }
 
 char * getPath(char * path) {
@@ -64,7 +68,7 @@ char * getPath(char * path) {
 		PATH = line.substr(5, string::npos);
 		file.close();
 	} else {
-		cerr << "Error opening the file" << endl;
+		cerr << "Error opening " << filename << endl;
 	}
 	return &PATH[0];
 }
@@ -91,32 +95,38 @@ void exportVariable(char * path, char * input) {
 	string tempfilename = filename + "/.temp.txt";
 	filename += "/.export.txt";
 	readVariables.open(filename.c_str());
-	writeVariables.open(tempfilename.c_str());
-	if (readVariables.is_open() && writeVariables.is_open()) {
-		string line;
-		bool existing = false;
-		while (getline(readVariables, line)) {
-			size_t equals = line.find_first_of("=");
-			string oldVarName = line.substr(0, equals);
-			if (newVarName == oldVarName) {
-				// update existing exported variable
-				writeVariables << input << endl;
-				existing = true;
-			} else {
-				writeVariables << line << endl;
-			}
-		}
-		if (!existing) {
-			// append new exported variable to file
-			writeVariables << input << endl;
-		} 
-		readVariables.close();
+	if (readVariables.fail()) {
+		writeVariables.open(filename.c_str());
+		writeVariables << input << endl;
 		writeVariables.close();
-		// replace old file with newly written file
-		remove(filename.c_str());
-		rename(tempfilename.c_str(), filename.c_str());
 	} else {
-		cerr << "Error opening the file" << endl;
+		writeVariables.open(tempfilename.c_str());
+		if (readVariables.is_open() && writeVariables.is_open()) {
+			string line;
+			bool existing = false;
+			while (getline(readVariables, line)) {
+				size_t equals = line.find_first_of("=");
+				string oldVarName = line.substr(0, equals);
+				if (newVarName == oldVarName) {
+					// update existing exported variable
+					writeVariables << input << endl;
+					existing = true;
+				} else {
+					writeVariables << line << endl;
+				}
+			}
+			if (!existing) {
+				// append new exported variable to file
+				writeVariables << input << endl;
+			} 
+			readVariables.close();
+			writeVariables.close();
+			// replace old file with newly written file
+			remove(filename.c_str());
+			rename(tempfilename.c_str(), filename.c_str());
+		} else {
+			cerr << "Error opening " << filename << endl;
+		}
 	}
 }
 
@@ -135,7 +145,7 @@ void updateHistory(char * input, char * path) {
 		history << input << endl;
 		history.close();
 	} else {
-		cerr << "Error opening the file" << endl;
+		cerr << "Error opening " << filename << endl;
 	}
 }
 
@@ -189,8 +199,8 @@ void historyLookup(char * input, char * path) {
 				cout << "No such line in history" << endl;
 			}
 			history.close();
-		} else {
-			cerr << "Error opening the file" << endl;
+		} else {		
+			cerr << "Error opening " << filename << endl;
 		}
 	}
 }
