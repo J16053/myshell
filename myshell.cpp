@@ -1,9 +1,9 @@
-#include <iostream>
-#include <cstdlib>
-#include <cstring>
-#include <cerrno>
-#include <unistd.h>
-#include <cstdio>
+#include <cstdlib> // standard library
+#include <iostream> // input/output
+#include <cstring> // strcmp()
+#include <cerrno> // errno
+#include <unistd.h> // system calls
+#include <cstdio> // remove()
 #include "files.hpp"
 
 using namespace std;
