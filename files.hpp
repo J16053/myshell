@@ -11,5 +11,6 @@ void displayVariables(char *);
 
 void exportVariable(char *, char *);
 
-char * getPath(char *);
+char * getVariable(char *, char *);
+
 #endif

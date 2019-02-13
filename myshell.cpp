@@ -7,18 +7,18 @@
 #include "files.hpp"
 
 using namespace std;
-const int MAXINPUT = 256; // max number of characters in array 
-const int MAXARGS = 3; // will have at most 3 arguments according to project description which I may have misunderstood
+const int MAXINPUT = 256; // max number of characters in array
+const int MAXARGS = 50; // max number of separate arguments
 
 int main() {	
-	char input[MAXINPUT];
-	char * argv[MAXARGS];
-	char * startDir = NULL;
+	char input[MAXINPUT]; // stores user input
+	char * argv[MAXARGS]; // stores individual arguments
+	char * startDir = NULL; // stores path of directory in which file is opened
 	startDir = getcwd(startDir, MAXINPUT); 
 	char nullpath[] = "PATH=";
 	exportVariable(startDir, nullpath);
 	if (startDir == NULL) {
-		cout << "something's wrong startDir is NULL" << endl;
+		cout << "Error: could not get starting directory" << endl;
 		exit(0);
 	}
 	while (true) {
@@ -70,7 +70,8 @@ int main() {
 		} else {
 			// see if command exists in PATH-specified directories, if yes display full path and args
 			bool found = false;
-			char * PATH = getPath(startDir); // contains value of exported PATH variable
+			string varname = "PATH";
+			char * PATH = getVariable(startDir, &varname[0]); // contains value of path variable
 			char slash[] = "/";
 			char * path; // will hold individual path to search
 			path = strtok(PATH, ":");

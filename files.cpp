@@ -3,7 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include <string>
+#include <cstring>
 #include <cctype>
 #include "files.hpp"
 
@@ -56,21 +56,32 @@ void displayVariables(char * path) {
 	print(filename, false);
 }
 
-char * getPath(char * path) {
+/**
+ * Gets value of variable specified by var from /.export.txt
+ * char * path contains the path to the directory containing /.export.txt
+ * char * var contains the variable name to be fetched
+ * Returns a pointer to the value of the variable
+ */
+
+char * getVariable(char * path, char * var) {
 	ifstream file;
 	string filename(path);
 	filename += "/.export.txt";
 	file.open(filename.c_str());
-	string PATH;
+	string value;
 	if (file.is_open()) {
 		string line;
 		getline(file, line);
-		PATH = line.substr(5, string::npos);
+		char equals[] = "=";
+		strcat(var, equals);
+		if (strcmp(var, line.substr(0, strlen(var)).c_str()) == 0) {
+			value = line.substr(strlen(var), string::npos);
+		}
 		file.close();
 	} else {
 		cerr << "Error opening " << filename << endl;
 	}
-	return &PATH[0];
+	return &value[0];
 }
 
 /**
