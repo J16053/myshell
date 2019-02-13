@@ -1,10 +1,10 @@
-#include <cstdlib>
-#include <cstddef>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <cstring>
-#include <cctype>
+#include <cstdlib> // standard library
+#include <cstddef> // size_t
+#include <iostream> // input/output
+#include <iomanip> // setw()
+#include <fstream> // files
+#include <cstring> // strcat(), strcmp()
+#include <cctype> // isdigit()
 #include "files.hpp"
 
 using namespace std;
