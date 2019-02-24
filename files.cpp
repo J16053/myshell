@@ -15,7 +15,7 @@ using namespace std;
  * bool linenumbers is true if line numbers are to be printed, false otherwise
  */
 
-void print(string filename, bool linenumbers) {
+static void print(string filename, bool linenumbers) {
 	ifstream file;
 	file.open(filename.c_str());
 	if (file.is_open()) {
@@ -166,7 +166,7 @@ void updateHistory(char * input, char * path) {
  * Returns true if input is valid, false otherwise
  */
 
-bool validHistoryInput(char * input) {
+static bool validHistoryInput(char * input) {
 	if (input[0] != '!') return false;	
 	char * current = &input[1];
 	while (isspace(*current) == 0 && *current != '\0') {

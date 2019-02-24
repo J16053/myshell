@@ -1,16 +1,16 @@
 #ifndef FILES_H_INCLUDED
 #define FILES_H_INCLUDED
 
-void displayHistory(char *);
+extern void displayHistory(char *);
 
-void updateHistory(char *, char *);
+extern void updateHistory(char *, char *);
 
-void historyLookup(char *, char *);
+extern void historyLookup(char *, char *);
 
-void displayVariables(char *);
+extern void displayVariables(char *);
 
-void exportVariable(char *, char *);
+extern void exportVariable(char *, char *);
 
-char * getVariable(char *, char *);
+extern char * getVariable(char *, char *);
 
 #endif
