@@ -1,11 +1,9 @@
 #include <cstdlib> // standard library
-#include <cstddef> // size_t
 #include <iostream> // input/output
 #include <iomanip> // setw()
 #include <fstream> // files
-#include <cstring> // strcat(), strcmp()
 #include <cctype> // isdigit()
-#include "files.hpp"
+#include "History.hpp"
 
 using namespace std;
 
@@ -43,102 +41,6 @@ void displayHistory(char * path) {
 	string filename(path);
 	filename +=  "/.history.txt";
 	print(filename, true);
-}
-
-/**
- * Prints the contents of /.export.txt to the console
- * char * path contains the path to the directory containing /.export.txt
- */
-
-void displayVariables(char * path) {
-	string filename(path);
-	filename += "/.export.txt";
-	print(filename, false);
-}
-
-/**
- * Gets value of variable specified by var from /.export.txt
- * char * path contains the path to the directory containing /.export.txt
- * char * var contains the variable name to be fetched
- * Returns a pointer to the value of the variable
- */
-
-char * getVariable(char * path, char * var) {
-	ifstream file;
-	string filename(path);
-	filename += "/.export.txt";
-	file.open(filename.c_str());
-	string value;
-	if (file.is_open()) {
-		string line;
-		getline(file, line);
-		char equals[] = "=";
-		strcat(var, equals);
-		if (strcmp(var, line.substr(0, strlen(var)).c_str()) == 0) {
-			value = line.substr(strlen(var), string::npos);
-		}
-		file.close();
-	} else {
-		cerr << "Error opening " << filename << endl;
-	}
-	return &value[0];
-}
-
-/**
- * Exports a variable to /.export.txt
- * char * path is the path to the directory in which /.export.txt is stored
- * char * input is the variable and value to be stored in /.export.txt
- * If the variable already exists, its value will be updated
- * Otherwise, the variable and its value will be added to /.export.txt
- */
-
-void exportVariable(char * path, char * input) {
-	char * current = input;
-	string newVarName = "";
-	while (*current != '\0' && *current != '=') {
-		newVarName += *current;
-		current++;
-	}
-	// open file streams for reading and writing
-	ifstream readVariables;
-	ofstream writeVariables;
-	string filename(path);	
-	string tempfilename = filename + "/.temp.txt";
-	filename += "/.export.txt";
-	readVariables.open(filename.c_str());
-	if (readVariables.fail()) {
-		writeVariables.open(filename.c_str());
-		writeVariables << input << endl;
-		writeVariables.close();
-	} else {
-		writeVariables.open(tempfilename.c_str());
-		if (readVariables.is_open() && writeVariables.is_open()) {
-			string line;
-			bool existing = false;
-			while (getline(readVariables, line)) {
-				size_t equals = line.find_first_of("=");
-				string oldVarName = line.substr(0, equals);
-				if (newVarName == oldVarName) {
-					// update existing exported variable
-					writeVariables << input << endl;
-					existing = true;
-				} else {
-					writeVariables << line << endl;
-				}
-			}
-			if (!existing) {
-				// append new exported variable to file
-				writeVariables << input << endl;
-			} 
-			readVariables.close();
-			writeVariables.close();
-			// replace old file with newly written file
-			remove(filename.c_str());
-			rename(tempfilename.c_str(), filename.c_str());
-		} else {
-			cerr << "Error opening " << filename << endl;
-		}
-	}
 }
 
 /**

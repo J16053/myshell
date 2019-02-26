@@ -4,7 +4,8 @@
 #include <cerrno> // errno
 #include <unistd.h> // system calls
 #include <cstdio> // remove()
-#include "files.hpp"
+#include "History.hpp"
+#include "List.hpp"
 
 using namespace std;
 const int MAXINPUT = 256; // max number of characters in array
@@ -13,10 +14,11 @@ const int MAXARGS = 50; // max number of separate arguments
 int main() {	
 	char input[MAXINPUT]; // stores user input
 	char * argv[MAXARGS]; // stores individual arguments
+	List env = List();
 	char * startDir = NULL; // stores path of directory in which file is opened
 	startDir = getcwd(startDir, MAXINPUT); 
 	char nullpath[] = "PATH=";
-	exportVariable(startDir, nullpath);
+	env.add(nullpath);
 	if (startDir == NULL) {
 		cout << "Error: could not get starting directory" << endl;
 		exit(0);
@@ -53,25 +55,23 @@ int main() {
 		} else if (strcmp(argv[0], "export") == 0) {
 			// export
 			if (argc == 1) {
-				displayVariables(startDir);
+				env.display();
 			} else {
-				exportVariable(startDir, argv[1]);
+				env.add(strdup(argv[1]));
 			} 
 		} else if (strcmp(argv[0], "history") == 0) {
 			// history
 			displayHistory(startDir);
 		} else if (strcmp(argv[0], "exit") == 0) {
 			// exit
-			// delete file with exported variables
-			string exportfile(startDir);
-			exportfile += "/.export.txt";
-			remove(exportfile.c_str());
 			exit(0);
 		} else {
 			// see if command exists in PATH-specified directories, if yes display full path and args
 			bool found = false;
 			string varname = "PATH";
-			char * PATH = getVariable(startDir, &varname[0]); // contains value of path variable
+			char * PATH;
+			PATH = env.getHeadValue();
+			cout<<"Looking in: "<<PATH<<endl;
 			char slash[] = "/";
 			char * path; // will hold individual path to search
 			path = strtok(PATH, ":");

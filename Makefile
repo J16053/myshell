@@ -1,12 +1,17 @@
-
-myshell: myshell.o files.o
-	g++ myshell.o files.o -o myshell
+myshell: myshell.o History.o List.o Variable.o
+	g++ myshell.o History.o List.o Variable.o -o myshell
 
 myshell.o: myshell.cpp
 	g++ -c myshell.cpp
 
-files.o: files.cpp files.hpp
-	g++ -c files.cpp
+History.o: History.cpp History.hpp
+	g++ -c History.cpp
+
+List.o: List.cpp List.hpp
+	g++ -c List.cpp
+
+Variable.o: Variable.cpp Variable.hpp
+	g++ -c Variable.cpp
 
 clean:
 	rm *.o myshell
