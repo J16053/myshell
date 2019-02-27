@@ -42,6 +42,14 @@ int main() {
 			arg = strtok(NULL, " ");
 		}
 		argv[argc] = NULL;
+		for (int i = 0; i < argc; i++) {
+			if (argv[i][0] == '$' && argv[i][1] != '\0') {
+				char * val = env.getVal(&argv[i][1]);
+				if (val != NULL) {
+					argv[i] = val;
+				}
+			}
+		}
 		if (strcmp(argv[0], "pwd") == 0) { // print working directory
 			cout << get_current_dir_name() << endl;
 		} else if (strcmp(argv[0], "cd") == 0) { // change directories

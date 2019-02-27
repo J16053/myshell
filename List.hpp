@@ -11,5 +11,6 @@ public:
 	void add(char * v);
 	void display();
 	char * getHeadValue();
+	char * getVal(char * name);
 };
 #endif

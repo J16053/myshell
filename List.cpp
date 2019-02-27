@@ -19,13 +19,23 @@ void List::add(char * v) {
 
 void List::display() {
 	Variable * current = head;
-	while (current->next != NULL) {
+	while (current != NULL) {
 		cout << current->toString() << endl;
 		current = current->next;
 	}
-	cout << current->toString() << endl;
 }
 
 char * List::getHeadValue() {
 	return strdup(head->value.c_str());
+}
+
+char * List::getVal(char * name) {
+	Variable * current = head;
+	while (current != NULL) {
+		if (!strcmp(current->name.c_str(), name)) {
+			return strdup(current->value.c_str());
+		}
+		current = current->next;
+	}
+	return NULL;
 }
