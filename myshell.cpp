@@ -14,23 +14,25 @@ const int MAXARGS = 50; // max number of separate arguments
 int main() {	
 	char input[MAXINPUT]; // stores user input
 	char * argv[MAXARGS]; // stores individual arguments
-	List env = List();
-	char * startDir = NULL; // stores path of directory in which file is opened
-	startDir = getcwd(startDir, MAXINPUT); 
+	List env = List(); // stores list of exported variables
 	char nullpath[] = "PATH=";
-	env.add(nullpath);
+	env.add(nullpath); // export PATH variable
+	const char * startDir = get_current_dir_name();
 	if (startDir == NULL) {
 		cout << "Error: could not get starting directory" << endl;
-		exit(0);
+		exit(1);
 	}
+	string cwd("PWD=");
+	cwd += startDir;
+	env.add(&cwd[0]); // export PWD variable
 	while (true) {
 		cout << ">> ";
 		int argc = 0; // number of arguments
 		cin.getline(input, MAXINPUT); // reads user input into input, '\0' terminated
 		if (input[0] == '!') {
-			historyLookup(input, startDir);
+			historyLookup(startDir, input);
 		}
-		updateHistory(input, startDir); // adds inputted command to history
+		updateHistory(startDir, input); // adds inputted command to history
 		char * arg; // temporary variable to store individual arguments
 		arg = strtok(input, " "); // splits input at space
 		while (arg != NULL && argc < MAXARGS) {
@@ -38,40 +40,32 @@ int main() {
 			argc++;
 			arg = strtok(NULL, " ");
 		}
-		if (strcmp(argv[0], "pwd") == 0) {
-			// print working directory
-			char * name = NULL;
-			name = getcwd(name, MAXINPUT); // copies current directory path to *name
-			if (name != NULL) {
-				cout << name << endl;
-			} else {
-				cout << strerror(errno) << endl;
+		if (strcmp(argv[0], "pwd") == 0) { // print working directory
+			cout << get_current_dir_name() << endl;
+		} else if (strcmp(argv[0], "cd") == 0) { // change directories
+			if (argc > 1 && chdir(argv[1]) == -1) {	// chdir returns -1 when unsuccessful and stores error in errno
+				cout << strerror(errno) << endl; // can also consider using perror
+			} else if (argc == 1) { // no directory given
+				cerr << "No directory specified\nUsage: cd [directory]" << endl;
+			} else { // cd successful, update PWD variable
+				cwd = (string)"PWD=" + get_current_dir_name();
+				env.add(&cwd[0]);
 			}
-		} else if (strcmp(argv[0], "cd") == 0) {
-			// change directories
-			if (chdir(argv[1]) == -1) {	// chdir returns -1 when unsuccessful and stores error in errno
-				cout << strerror(errno) << endl;
-			}
-		} else if (strcmp(argv[0], "export") == 0) {
-			// export
+		} else if (strcmp(argv[0], "export") == 0) { // export
 			if (argc == 1) {
 				env.display();
 			} else {
 				env.add(strdup(argv[1]));
 			} 
-		} else if (strcmp(argv[0], "history") == 0) {
-			// history
+		} else if (strcmp(argv[0], "history") == 0) { // history
 			displayHistory(startDir);
-		} else if (strcmp(argv[0], "exit") == 0) {
-			// exit
+		} else if (strcmp(argv[0], "exit") == 0) { // exit
 			exit(0);
-		} else {
+		} else { // not built-in command
 			// see if command exists in PATH-specified directories, if yes display full path and args
 			bool found = false;
 			string varname = "PATH";
-			char * PATH;
-			PATH = env.getHeadValue();
-			cout<<"Looking in: "<<PATH<<endl;
+			char * PATH = env.getHeadValue();
 			char slash[] = "/";
 			char * path; // will hold individual path to search
 			path = strtok(PATH, ":");

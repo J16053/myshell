@@ -37,7 +37,7 @@ static void print(string filename, bool linenumbers) {
  * char * path contains the path to the directory containing /.history.txt
  */
 
-void displayHistory(char * path) {
+void displayHistory(const char * path) {
 	string filename(path);
 	filename +=  "/.history.txt";
 	print(filename, true);
@@ -49,7 +49,7 @@ void displayHistory(char * path) {
  * char * path is the path to the directory in which /.history.txt is stored
  */
 
-void updateHistory(char * input, char * path) {
+void updateHistory(const char * path, char * input) {
 	ofstream history;
 	string filename(path);
 	filename += "/.history.txt";
@@ -88,7 +88,7 @@ static bool validHistoryInput(char * input) {
  * char * path contains the path to the directory containing /.history.txt
  */
 
-void historyLookup(char * input, char * path) {
+void historyLookup(const char * path, char * input) {
 	if (validHistoryInput(input)) {
 		ifstream history;
 		string filename(path);
