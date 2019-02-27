@@ -3,7 +3,6 @@
 #include <string>
 using namespace std;
 class Variable {
-public:
 	// member attributes
         string name;
         string value;
