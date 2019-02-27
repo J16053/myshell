@@ -4,15 +4,15 @@ A Linux shell for my Operating Systems class
 Implemented built-in commands:
 
 - pwd - print name of current/working directory.
-- cd - change the current directory.
-- export - names of exported shell variables.
+- cd [directory] - change the current directory to the one specified by [directory].
+- export [variable] - list names of exported shell variables if [variable] is not given, or export [variable].
 - history - display the command history list with line numbers.
 - !num - execute the command located at line num in history.
 - exit - free all space allocated gracefully and exit the application.
 
 For non-built-in commands, the program searches the directory system in the order 
 specified by the PATH variable for a file with the same name as the first identifier 
-and displays the full path of the command and argument(s) passed.
+and executes the command.
 
 Usage
 ------

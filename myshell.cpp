@@ -4,6 +4,7 @@
 #include <cerrno> // errno
 #include <unistd.h> // system calls
 #include <cstdio> // remove()
+#include <sys/wait.h> // wait()
 #include "History.hpp"
 #include "List.hpp"
 
@@ -40,6 +41,7 @@ int main() {
 			argc++;
 			arg = strtok(NULL, " ");
 		}
+		argv[argc] = NULL;
 		if (strcmp(argv[0], "pwd") == 0) { // print working directory
 			cout << get_current_dir_name() << endl;
 		} else if (strcmp(argv[0], "cd") == 0) { // change directories
@@ -73,11 +75,12 @@ int main() {
 				string searchpath = path;
 				searchpath += "/";
 				searchpath += argv[0];
-				if (access(searchpath.c_str(), X_OK) == 0) {
-					cout << argv[0] << " is an external command (" << searchpath << ")" << endl;
-					cout << "command arguments:" << endl;
-					for (int i = 1; i < argc; i++) {
-						cout << argv[i] << endl;
+				if (access(searchpath.c_str(), X_OK) == 0) {	
+					argv[0] = &searchpath[0];
+					if (fork() == 0) {
+						execv(argv[0], argv);
+					} else {
+						wait(NULL);
 					}
 					found = true;
 				}
