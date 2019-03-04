@@ -2,9 +2,14 @@
 #include "Variable.hpp"
 using namespace std;
 
-Variable::Variable(char * v, Variable * next) {
+/*
+ * Constructor
+ * char* v should be of format "name=value"
+ */
+
+Variable::Variable(char* v, Variable* next) {
 	size_t n = 0;
-	char * current = v;
+	char* current = v;
 	while (*current != '\0') {
 		if (*current == '=') break;
 		current++;
@@ -16,6 +21,12 @@ Variable::Variable(char * v, Variable * next) {
 	else this->value.assign(current);
 	this->next = next;
 }
+
+/*
+ * Returns stringified Variable
+ */
+
 string Variable::toString() {
 	return name + "=" + value;
 }
+

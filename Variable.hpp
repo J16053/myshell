@@ -6,11 +6,12 @@ class Variable {
 	// member attributes
         string name;
         string value;
-        Variable * next;
+        Variable* next;
 	// constructor
-        Variable(char * v, Variable * next = NULL); 
+        Variable(char* v, Variable* next = NULL); 
         string toString();
         friend class List;
 };
 
 #endif
+

@@ -5,12 +5,17 @@
 using namespace std;
 
 class List {
-	Variable * head;
+private:	
+	Variable* head;
 public:
-	List() { head = NULL; }
-	void add(char * v);
+	int size;
+public:
+	List() { head = NULL; size = 0; }
+	void add(char* v);
 	void display();
-	char * getHeadValue();
-	char * getVal(char * name);
+	char* getHeadValue();
+	char* getVal(char* name);
+	void getEnv(char** env);
 };
 #endif
+
