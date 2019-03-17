@@ -7,10 +7,10 @@ using namespace std;
 class List {
 private:	
 	Variable* head;
-public:
 	int size;
 public:
 	List() { head = NULL; size = 0; }
+	int getSize();
 	void add(char* v);
 	void display();
 	char* getHeadValue();

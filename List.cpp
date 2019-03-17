@@ -3,12 +3,18 @@
 #include "List.hpp"
 using namespace std;
 
+/**
+ * Return size of list
+ */
+int List::getSize() {
+	return size;
+}
+
 /*
  * Given a char* with format "name=value",
  * add a new Variable to the list
  * or update the existing value of a Variable with the same name
  */
-
 void List::add(char* v) {
 	Variable* temp = new Variable(v);
 	if (head == NULL) {
@@ -32,7 +38,6 @@ void List::add(char* v) {
 /* 
  * Prints all names and values of Variables in List
  */
-
 void List::display() {
 	Variable* current = head;
 	while (current != NULL) {
@@ -45,7 +50,6 @@ void List::display() {
  * Gets value of head variable (useful for PATH variable)
  * return char* value
  */
-
 char* List::getHeadValue() {
 	return strdup(head->value.c_str());
 }
@@ -55,7 +59,6 @@ char* List::getHeadValue() {
  * param char* name to search for
  * return char* value or NULL if no variable matches
  */
-
 char* List::getVal(char* name) {
 	Variable* current = head;
 	while (current != NULL) {
@@ -72,7 +75,6 @@ char* List::getVal(char* name) {
  * param char** env is the array of strings to populate
  * and it should be at least equal to size+1
  */
-
 void List::getEnv(char** env) {
 	Variable* current = head;
 	for (int i = 0; i < size; i++) {

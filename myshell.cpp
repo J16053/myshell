@@ -19,9 +19,9 @@
 
 using namespace std;
 
-void expandVariables(int argc, char** argv, List env);
-bool redirectIO(int argc, char** argv, List env, const char* startDir, string cwd);
-void execute(int argc, char** argv, List env, const char* startDir, string cwd);
+void expandVariables(int argc, char** argv, List* env);
+bool redirectIO(int argc, char** argv, List* env, const char* startDir, string cwd);
+void execute(int argc, char** argv, List* env, const char* startDir, string cwd);
 
 int main() {	
 	char input[MAXINPUT]; // stores user input
@@ -65,7 +65,7 @@ int main() {
 		argv[argc] = NULL;
 
 		// expand shell variables $
-		expandVariables(argc, argv, env);
+		expandVariables(argc, argv, &env);
 
 		// parse pipes
 		bool end = false; 		
@@ -83,23 +83,27 @@ int main() {
 				if (pid == -1) {
 					cerr << "Fork failed" << endl;
 					exit(1);
-				} else if (pid == 0) {
+				} else if (pid == 0) { // child process
 					original = false;
 					close(p[WRITE_END]);
 					close(STDIN);
 					dup2(p[READ_END], STDIN);
+
+					// shift argv structure for sub-command
 					for (int j = 0; j+i < argc; j++) {
 						argv[j] = argv[j+i+1];
 					}
 					argc -= i+1;
 					i = 0;
-				} else {
+				} else { // parent process
 					close(p[READ_END]);
 					close(STDOUT);
 					dup2(p[WRITE_END], STDOUT);
 					argv[i] = NULL;
 					argc = i;
-					if (!redirectIO(argc, argv, env, startDir, cwd)) execute(argc, argv, env, startDir, cwd);
+					if (!redirectIO(argc, argv, &env, startDir, cwd)) {
+						execute(argc, argv, &env, startDir, cwd);
+					}
 					close(p[WRITE_END]);
 					close(STDOUT);
 					wait(NULL);
@@ -112,7 +116,9 @@ int main() {
 		}
 		
 		// no pipes in command
-		if (end && !redirectIO(argc, argv, env, startDir, cwd)) execute(argc, argv, env, startDir, cwd);
+		if (end && !redirectIO(argc, argv, &env, startDir, cwd)) {
+			execute(argc, argv, &env, startDir, cwd);
+		}
 
 		if (!original) {
 			exit(0); // only original process should loop
@@ -121,11 +127,14 @@ int main() {
 	return 0;
 }
 
-void expandVariables(int argc, char** argv, List env) {
-	// expand shell variables starting with $
+/**
+ * Expand shell variable names (starting with $)
+ * to corresponding values in place in argv structure
+ */
+void expandVariables(int argc, char** argv, List* env) {
 	for (int i = 0; i < argc; i++) {
 		if (argv[i][0] == '$' && argv[i][1] != '\0') {
-			char* val = env.getVal(&argv[i][1]);
+			char* val = (*env).getVal(&argv[i][1]);
 			if (val != NULL) {
 				argv[i] = val;
 			}
@@ -133,37 +142,53 @@ void expandVariables(int argc, char** argv, List env) {
 	}
 }
 
-bool redirectIO(int argc, char** argv, List env, const char* startDir, string cwd) {
-	int redirect = -1;
-	char* file = NULL; // redirect output
+/**
+ * Redirects input/output if command contains <, >, or 2>
+ * Forks a child process which executes the command with redirected IO
+ * Returns true if redirect needed (and therefore command executed)
+ * Returns false if no redirect (command not yet executed)
+ */
+bool redirectIO(int argc, char** argv, List* env, const char* startDir, string cwd) {
+	char* infile = NULL;
+	char* outfile = NULL;
+	char* errfile = NULL;
+	
 	// parse < > 2>
 	for (int i = 0; i < argc; i++) {	
 		if ((strcmp(argv[i], "<") == 0 || strcmp(argv[i], ">") == 0 || strcmp(argv[i], "2>") == 0) && i+1 < argc) {
-			file = argv[i+1]; // what happens when there's more than one redirection?
-			if (strcmp(argv[i], "<") == 0) redirect = STDIN;
-			else if (strcmp(argv[i], ">") == 0) redirect = STDOUT;
-			else if (strcmp(argv[i], "2>") == 0) redirect = STDERR;
-			else cerr << "what?" << endl;
-			argv[i] = NULL;
+			if (strcmp(argv[i], "<") == 0) {
+				infile = argv[i+1];
+			} else if (strcmp(argv[i], ">") == 0) {
+				outfile = argv[i+1];
+			} else if (strcmp(argv[i], "2>") == 0) {
+				errfile = argv[i+1];
+			} else cerr << "what?" << endl;
+			for (int j = i; j+2 <= argc; j++) {
+				argv[j] = argv[j+2];
+			} 
 			argc -= 2;
+			if (argv[i] != NULL) i--;
 		}
 	}
 
 	// redirect input/output
-	if (file != NULL) {
+	if (infile != NULL || outfile != NULL || errfile != NULL) {
 		int pid = fork();
 		if (pid == -1) {
 			cerr << "Fork failed" << endl;
 			exit(1);
 		} else if (pid == 0) {
-			if (redirect == STDIN) {
+			if (infile != NULL) { // redirect STDIN
 				close(STDIN);
-				open(file, O_RDONLY);
-			} else {
-				if (redirect == STDOUT) close(STDOUT);
-				else if (redirect == STDERR) close(STDERR);
-				else cerr << "You shouldn't be here" << endl;	
-				if (open(file, O_CREAT|O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH) != redirect) cerr << "File open failed" << endl;
+				if (open(infile, O_RDONLY)) cerr << "Input file open failed" << endl;
+			}
+			if (outfile != NULL) { // redirect STDOUT
+				close(STDOUT);
+				if (open(outfile, O_CREAT|O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH) != STDOUT) cerr << "Output file open failed" << endl;
+			}
+			if (errfile != NULL) { // redirect STDERR
+				close(STDERR);
+				if (open(errfile, O_CREAT|O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH) != STDERR) cerr << "Error file open failed" << endl;
 			}
 			execute(argc, argv, env, startDir, cwd);
 			exit(0);
@@ -171,27 +196,29 @@ bool redirectIO(int argc, char** argv, List env, const char* startDir, string cw
 			wait(NULL);
 		}
 		return true;
-	} else return false;
+	} else return false; // nothing redirected
 }
 
-void execute(int argc, char** argv, List env, const char* startDir, string cwd) {
-	// execute commands
+/**
+ * Executes command stored in argv
+ */
+void execute(int argc, char** argv, List* env, const char* startDir, string cwd) {
 	if (strcmp(argv[0], "pwd") == 0) { // print working directory
 		cout << get_current_dir_name() << endl;
 	} else if (strcmp(argv[0], "cd") == 0) { // change directories
 		if (argc > 1 && chdir(argv[1]) == -1) {	// chdir returns -1 when unsuccessful and stores error in errno
-			cout << strerror(errno) << endl; // can also consider using perror
+			cerr << strerror(errno) << endl; // can also consider using perror
 		} else if (argc == 1) { // no directory given
 			cerr << "No directory specified\nUsage: cd [directory]" << endl;
 		} else { // cd successful, update PWD variable
 			cwd = (string)"PWD=" + get_current_dir_name();
-			env.add(&cwd[0]);
+			(*env).add(&cwd[0]);
 		}
 	} else if (strcmp(argv[0], "export") == 0) { // export
 		if (argc == 1) {
-			env.display();
+			(*env).display();
 		} else {
-			env.add(strdup(argv[1]));
+			(*env).add(strdup(argv[1]));
 		} 
 	} else if (strcmp(argv[0], "history") == 0) { // history
 		displayHistory(startDir);
@@ -199,8 +226,8 @@ void execute(int argc, char** argv, List env, const char* startDir, string cwd) 
 		exit(0);
 	} else { // not built-in command
 		// see if command exists in PATH-specified directories, if yes display full path and args
-		char* envp[env.size+1];
-		env.getEnv(envp);
+		char* envp[(*env).getSize()+1];
+		(*env).getEnv(envp);
 		bool found = false;
 		if (argv[0][0] == '/' && access(argv[0], X_OK) == 0) { // absolute path	
 			if (fork() == 0) {
@@ -220,7 +247,7 @@ void execute(int argc, char** argv, List env, const char* startDir, string cwd) 
 				found = true;
 			}
 		} else { // look in PATH variable
-			char* PATH = env.getHeadValue();
+			char* PATH = (*env).getHeadValue();
 			char slash[] = "/";
 			char* path; // will hold individual path to search
 			path = strtok(PATH, ":");
@@ -238,9 +265,10 @@ void execute(int argc, char** argv, List env, const char* startDir, string cwd) 
 				path = strtok(NULL, ":");
 			}	
 		}
-		for (int i = 0; i < env.size; i++) {
+		for (int i = 0; i < (*env).getSize(); i++) {
 			delete[] envp[i];
 		}
 		if (!found) cerr << "command not found" << endl;
 	}
-} 
+}
+
