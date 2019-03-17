@@ -19,6 +19,7 @@
 
 using namespace std;
 
+void expandHistory(int& argc, char** argv, const char* startDir);
 void expandVariables(int argc, char** argv, List* env);
 bool redirectIO(int argc, char** argv, List* env, const char* startDir, string& cwd);
 void execute(int argc, char** argv, List* env, const char* startDir, string& cwd);
@@ -42,15 +43,7 @@ int main() {
 		
 		// print prompt
 		cout << ">> ";
-		
-		// read input
 		cin.getline(input, MAXINPUT); // reads user input into input, '\0' terminated
-		if (input[0] == '!') {
-			historyLookup(startDir, input);
-		}
-
-		// add inputted command to history
-		updateHistory(startDir, input);
 		
 		// parse input into space-separated tokens stored in argv
 		int argc = 0; // number of arguments
@@ -63,6 +56,12 @@ int main() {
 		}
 		// argv is NULL-terminated
 		argv[argc] = NULL;
+
+		// expand history !
+		expandHistory(argc, argv, startDir);
+
+		// add command to history
+		updateHistory(startDir, argv, argc);
 
 		// expand shell variables $
 		expandVariables(argc, argv, &env);
@@ -125,6 +124,32 @@ int main() {
 		}
 	}
 	return 0;
+}
+
+/**
+ * Expand history !num to corresponding command in history file
+ * at line num, modify argv structure accordingly
+ */
+void expandHistory(int& argc, char** argv, const char* startDir) {
+	for (int i = 0; i < argc; i++) {
+		if (argv[i][0] == '!') {
+			char* cmd = &(historyLookup(startDir, argv[i])[0]);
+			char* arg; // temporary variable to store individual arguments
+			int c = 0;
+			arg = strtok(cmd, " "); // splits input at space
+			while (arg != NULL) {
+				if (c != 0) {
+					for (int j = argc; j >= i+c; j--) {
+						argv[j+1] = argv[j];
+					}
+					argc++;
+				}
+				argv[i+c] = arg; // argv is an array of pointers to arguments
+				c++;
+				arg = strtok(NULL, " ");
+			}
+		}
+	}
 }
 
 /**

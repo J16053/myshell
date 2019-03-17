@@ -45,17 +45,21 @@ void displayHistory(const char * path) {
 
 /**
  * Adds command to /.history.txt
- * char * input contains the string to add to the file
- * char * path is the path to the directory in which /.history.txt is stored
+ * char* path is the path to the directory in which /.history.txt is stored
+ * char** input is list of space-separated strings to add
+ * int count is length of input 
  */
 
-void updateHistory(const char * path, char * input) {
+void updateHistory(const char* path, char** input, int count) {
 	ofstream history;
 	string filename(path);
 	filename += "/.history.txt";
 	history.open(filename.c_str(), ios::app);
 	if (history.is_open()) {
-		history << input << endl;
+		for (int i = 0; i < count; i++) {
+			history << input[i] << " ";
+		}
+		history << endl;
 		history.close();
 	} else {
 		cerr << "Error opening " << filename << endl;
@@ -88,7 +92,7 @@ static bool validHistoryInput(char * input) {
  * char * path contains the path to the directory containing /.history.txt
  */
 
-void historyLookup(const char * path, char * input) {
+string historyLookup(const char * path, char * input) {
 	if (validHistoryInput(input)) {
 		ifstream history;
 		string filename(path);
@@ -102,12 +106,14 @@ void historyLookup(const char * path, char * input) {
 				count++;
 			}
 			if (count == lineno) {
-				int i = 0;
+				/*int i = 0;
 				while ( i < line.length()) {
 					input[i] = line.at(i);
 					i++;
 				}
 				input[i] = '\0';
+				*/
+				return line;
 			} else {
 				cout << "No such line in history" << endl;
 			}
@@ -116,4 +122,5 @@ void historyLookup(const char * path, char * input) {
 			cerr << "Error opening " << filename << endl;
 		}
 	}
+	return "";
 }
