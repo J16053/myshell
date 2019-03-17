@@ -20,8 +20,8 @@
 using namespace std;
 
 void expandVariables(int argc, char** argv, List* env);
-bool redirectIO(int argc, char** argv, List* env, const char* startDir, string cwd);
-void execute(int argc, char** argv, List* env, const char* startDir, string cwd);
+bool redirectIO(int argc, char** argv, List* env, const char* startDir, string& cwd);
+void execute(int argc, char** argv, List* env, const char* startDir, string& cwd);
 
 int main() {	
 	char input[MAXINPUT]; // stores user input
@@ -148,7 +148,7 @@ void expandVariables(int argc, char** argv, List* env) {
  * Returns true if redirect needed (and therefore command executed)
  * Returns false if no redirect (command not yet executed)
  */
-bool redirectIO(int argc, char** argv, List* env, const char* startDir, string cwd) {
+bool redirectIO(int argc, char** argv, List* env, const char* startDir, string& cwd) {
 	char* infile = NULL;
 	char* outfile = NULL;
 	char* errfile = NULL;
@@ -202,7 +202,7 @@ bool redirectIO(int argc, char** argv, List* env, const char* startDir, string c
 /**
  * Executes command stored in argv
  */
-void execute(int argc, char** argv, List* env, const char* startDir, string cwd) {
+void execute(int argc, char** argv, List* env, const char* startDir, string& cwd) {
 	if (strcmp(argv[0], "pwd") == 0) { // print working directory
 		cout << get_current_dir_name() << endl;
 	} else if (strcmp(argv[0], "cd") == 0) { // change directories
