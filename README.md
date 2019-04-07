@@ -34,10 +34,11 @@ For example, the following command will export the PATH variable with a value of
 >> export PATH=/bin/bash
 ```
 
+
 This shell can also parse the following special symbols:
 
 - | pipe connects the standard output of one command to the standard output of another
 - < [filename] redirects input to the file specified by [filename] instead of stdin
-- > [filename] redirects output to the file specified by [filename] instead of stdout
-- >2 [filename] redirects stderr to the file specified by [filename]
+- \> [filename] redirects output to the file specified by [filename] instead of stdout
+- \>2 [filename] redirects stderr to the file specified by [filename]
 - $[varname] is replaced by its value if [varname] refers to an exported shell variable
