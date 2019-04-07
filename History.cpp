@@ -86,8 +86,7 @@ static bool validHistoryInput(char * input) {
 }
 
 /**
- * Looks for the corresponding line in /.history.txt and stores the command at
- * the specified line number in input
+ * Returns the corresponding line in /.history.txt
  * char * input contains the line number to be found
  * char * path contains the path to the directory containing /.history.txt
  */
@@ -106,13 +105,6 @@ string historyLookup(const char * path, char * input) {
 				count++;
 			}
 			if (count == lineno) {
-				/*int i = 0;
-				while ( i < line.length()) {
-					input[i] = line.at(i);
-					i++;
-				}
-				input[i] = '\0';
-				*/
 				return line;
 			} else {
 				cout << "No such line in history" << endl;

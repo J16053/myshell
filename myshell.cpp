@@ -290,6 +290,7 @@ void execute(int argc, char** argv, List* env, const char* startDir, string& cwd
 				path = strtok(NULL, ":");
 			}	
 		}
+		// free dynamically allocated space
 		for (int i = 0; i < (*env).getSize(); i++) {
 			delete[] envp[i];
 		}
